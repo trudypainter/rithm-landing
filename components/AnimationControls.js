@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { Settings } from "lucide-react";
+
 export default function AnimationControls({
   showControls,
   setShowControls,
@@ -5,60 +8,134 @@ export default function AnimationControls({
   setAnimationConfig,
   defaultConfig,
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    const numValue = parseFloat(value);
+
+    setAnimationConfig((prev) => ({
+      ...prev,
+      [name]: numValue,
+      // Update both desktop and mobile values when changed in controls
+      ...(name === "maxGlowIncrease" && {
+        desktopMaxGlowIncrease: numValue,
+        mobileMaxGlowIncrease: numValue * (38 / 150), // Maintain the mobile/desktop ratio
+      }),
+      ...(name === "spreadRadius" && {
+        desktopSpreadRadius: numValue,
+        mobileSpreadRadius: numValue * 0.5, // Maintain the mobile/desktop ratio
+      }),
+    }));
+  };
+
+  const resetToDefault = () => {
+    setAnimationConfig(defaultConfig);
+  };
+
+  if (!showControls) return null;
+
   return (
-    <>
+    <div className="fixed bottom-4 right-4 z-50">
       <button
-        onClick={() => setShowControls(!showControls)}
-        className="fixed top-4 right-4 bg-gray-700 px-3 py-1 rounded-md text-sm z-10"
+        onClick={() => setIsOpen(!isOpen)}
+        className="bg-gray-800 p-2 rounded-full"
       >
-        {showControls ? "Hide Controls" : "Show Controls"}
+        <Settings className="w-6 h-6" />
       </button>
 
-      {showControls && (
-        <div className="fixed top-16 right-4 bg-gray-800 p-4 rounded-lg z-10 w-64 space-y-4">
-          <h3 className="text-sm font-bold mb-4">Animation Controls</h3>
-          {Object.entries(animationConfig).map(([key, value]) => (
-            <div key={key} className="space-y-1">
-              <div className="flex justify-between">
-                <label className="text-xs">{key}</label>
-                <span className="text-xs">{value.toFixed(2)}</span>
-              </div>
+      {isOpen && (
+        <div className="absolute bottom-12 right-0 bg-gray-800 p-4 rounded-lg shadow-lg w-64">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm mb-1">Base Glow</label>
               <input
                 type="range"
-                min={key === "decayRate" ? 0.8 : 0}
-                max={
-                  key === "decayRate"
-                    ? 0.99
-                    : key === "maxOpacity"
-                    ? 1
-                    : key === "scrollMultiplier"
-                    ? 200
-                    : key === "maxGlowIncrease"
-                    ? 200
-                    : key === "spreadRadius"
-                    ? 100
-                    : 100
-                }
-                step={key === "decayRate" || key === "maxOpacity" ? 0.01 : 1}
-                value={value}
-                onChange={(e) =>
-                  setAnimationConfig((prev) => ({
-                    ...prev,
-                    [key]: parseFloat(e.target.value),
-                  }))
-                }
+                name="baseGlow"
+                min="0"
+                max="100"
+                value={animationConfig.baseGlow}
+                onChange={handleChange}
                 className="w-full"
               />
+              <div className="text-xs">{animationConfig.baseGlow}</div>
             </div>
-          ))}
-          <button
-            onClick={() => setAnimationConfig(defaultConfig)}
-            className="bg-gray-700 px-3 py-1 rounded-md text-sm w-full mt-4"
-          >
-            Reset to Default
-          </button>
+
+            <div>
+              <label className="block text-sm mb-1">Max Glow Increase</label>
+              <input
+                type="range"
+                name="maxGlowIncrease"
+                min="0"
+                max="300"
+                value={animationConfig.desktopMaxGlowIncrease}
+                onChange={handleChange}
+                className="w-full"
+              />
+              <div className="text-xs">
+                Desktop: {animationConfig.desktopMaxGlowIncrease}
+                <br />
+                Mobile: {animationConfig.mobileMaxGlowIncrease}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm mb-1">Spread Radius</label>
+              <input
+                type="range"
+                name="spreadRadius"
+                min="0"
+                max="200"
+                value={animationConfig.desktopSpreadRadius}
+                onChange={handleChange}
+                className="w-full"
+              />
+              <div className="text-xs">
+                Desktop: {animationConfig.desktopSpreadRadius}
+                <br />
+                Mobile: {animationConfig.mobileSpreadRadius}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm mb-1">Max Opacity</label>
+              <input
+                type="range"
+                name="maxOpacity"
+                min="0"
+                max="1"
+                step="0.1"
+                value={animationConfig.maxOpacity}
+                onChange={handleChange}
+                className="w-full"
+              />
+              <div className="text-xs">{animationConfig.maxOpacity}</div>
+            </div>
+
+            <div>
+              <label className="block text-sm mb-1">Decay Rate</label>
+              <input
+                type="range"
+                name="decayRate"
+                min="0.8"
+                max="0.999"
+                step="0.001"
+                value={animationConfig.decayRate}
+                onChange={handleChange}
+                className="w-full"
+              />
+              <div className="text-xs">{animationConfig.decayRate}</div>
+            </div>
+
+            <button
+              onClick={resetToDefault}
+              className="bg-gray-700 px-3 py-1 rounded text-sm w-full"
+            >
+              Reset to Default
+            </button>
+          </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

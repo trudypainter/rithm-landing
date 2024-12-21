@@ -6,11 +6,12 @@ import AnimationControls from "../components/AnimationControls";
 import Head from "next/head";
 
 const DEFAULT_ANIMATION_CONFIG = {
-  baseGlow: 40,
-  maxGlowIncrease: 150,
-  desktopSpreadRadius: 70,
-  mobileSpreadRadius: 35,
-  maxOpacity: 0.7,
+  baseGlow: 10,
+  desktopMaxGlowIncrease: 150,
+  mobileMaxGlowIncrease: 38,
+  desktopSpreadRadius: 10,
+  mobileSpreadRadius: 10,
+  maxOpacity: 0.8,
   decayRate: 0.98,
   scrollMultiplier: 80,
 };
@@ -42,7 +43,11 @@ const INITIAL_MESSAGES = [
 ];
 
 export default function RithmLanding() {
-  const [messages, setMessages] = useState(INITIAL_MESSAGES);
+  const [messages, setMessages] = useState([
+    ...INITIAL_MESSAGES,
+    ...INITIAL_MESSAGES,
+    ...INITIAL_MESSAGES,
+  ]);
   const [scrollIntensity, setScrollIntensity] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const [animationConfig, setAnimationConfig] = useState(
@@ -50,6 +55,9 @@ export default function RithmLanding() {
   );
   const [spreadRadius, setSpreadRadius] = useState(
     DEFAULT_ANIMATION_CONFIG.desktopSpreadRadius
+  );
+  const [maxGlowIncrease, setMaxGlowIncrease] = useState(
+    DEFAULT_ANIMATION_CONFIG.desktopMaxGlowIncrease
   );
   const scrollRef = useRef(null);
   const observerRef = useRef(null);
@@ -60,10 +68,17 @@ export default function RithmLanding() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          setMessages((prev) => [...prev, ...INITIAL_MESSAGES]);
+          setMessages((prev) => [
+            ...prev,
+            ...INITIAL_MESSAGES,
+            ...INITIAL_MESSAGES,
+            ...INITIAL_MESSAGES,
+          ]);
         }
       },
-      { threshold: 1.0 }
+      {
+        threshold: 0.5,
+      }
     );
 
     if (observerRef.current) {
@@ -140,6 +155,11 @@ export default function RithmLanding() {
           ? DEFAULT_ANIMATION_CONFIG.mobileSpreadRadius
           : DEFAULT_ANIMATION_CONFIG.desktopSpreadRadius
       );
+      setMaxGlowIncrease(
+        e.matches
+          ? DEFAULT_ANIMATION_CONFIG.mobileMaxGlowIncrease
+          : DEFAULT_ANIMATION_CONFIG.desktopMaxGlowIncrease
+      );
     };
 
     // Set initial value
@@ -158,13 +178,12 @@ export default function RithmLanding() {
         <meta name="description" content="Swipe on algorithms, not people" />
         <link rel="icon" href="/Heart.png" />
       </Head>
-      <div className="min-h-screen bg-black text-white relative">
+      <div className="min-h-screen bg-black text-white text-xl relative px-4">
         <div
           className="fixed inset-0 pointer-events-none"
           style={{
             boxShadow: `inset 0 0 ${
-              animationConfig.baseGlow +
-              scrollIntensity * animationConfig.maxGlowIncrease
+              animationConfig.baseGlow + scrollIntensity * maxGlowIncrease
             }px ${scrollIntensity * spreadRadius}px rgba(236, 72, 153, ${
               scrollIntensity * animationConfig.maxOpacity
             })`,
@@ -207,7 +226,7 @@ export default function RithmLanding() {
                         : "bg-gray-600 rounded-tl-none"
                     }`}
                   >
-                    <p className="text-sm md:text-base">{message.text}</p>
+                    <p className="text-xl ">{message.text}</p>
                   </div>
                 </div>
               </div>
