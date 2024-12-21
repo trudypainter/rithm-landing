@@ -69,7 +69,11 @@ export default function RithmLanding() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          setMessages((prev) => [...prev, ...INITIAL_MESSAGES]);
+          setMessages((prev) => [
+            ...prev,
+            ...INITIAL_MESSAGES,
+            ...INITIAL_MESSAGES,
+          ]);
         }
       },
       {
@@ -201,7 +205,7 @@ export default function RithmLanding() {
           >
             {messages.map((message, index) => (
               <div key={index}>
-                {index === INITIAL_MESSAGES.length && (
+                {index % INITIAL_MESSAGES.length === 0 && index !== 0 && (
                   <div ref={observerRef} className="h-0" />
                 )}
                 {index % INITIAL_MESSAGES.length === 0 && (
