@@ -61,32 +61,9 @@ export default function RithmLanding() {
     DEFAULT_ANIMATION_CONFIG.desktopMaxGlowIncrease
   );
   const scrollRef = useRef(null);
-  const observerRef = useRef(null);
+  const lastProcessedGroup = useRef(0);
   const lastScrollTime = useRef(0);
   const animationFrameRef = useRef();
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setMessages((prev) => [
-            ...prev,
-            ...INITIAL_MESSAGES,
-            ...INITIAL_MESSAGES,
-          ]);
-        }
-      },
-      {
-        threshold: 0.5,
-      }
-    );
-
-    if (observerRef.current) {
-      observer.observe(observerRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     let lastScrollY = 0;
@@ -95,8 +72,24 @@ export default function RithmLanding() {
     const handleScroll = () => {
       if (!scrollRef.current) return;
 
+      // Infinite scroll logic
+      const scrollElement = scrollRef.current;
+      const scrollPosition = scrollElement.scrollTop;
+      const groupHeight = scrollElement.clientHeight;
+      const currentGroup = Math.floor(scrollPosition / groupHeight);
+
+      if (currentGroup > lastProcessedGroup.current) {
+        setMessages((prev) => [
+          ...prev,
+          ...INITIAL_MESSAGES,
+          ...INITIAL_MESSAGES,
+        ]);
+        lastProcessedGroup.current = currentGroup;
+      }
+
+      // Glow effect logic
       const currentTime = Date.now();
-      const scrollY = scrollRef.current.scrollTop;
+      const scrollY = scrollElement.scrollTop;
       const scrollDelta = Math.abs(scrollY - lastScrollY);
       const timeDelta = currentTime - lastScrollTime.current;
 
@@ -205,9 +198,6 @@ export default function RithmLanding() {
           >
             {messages.map((message, index) => (
               <div key={index}>
-                {index % INITIAL_MESSAGES.length === 0 && index !== 0 && (
-                  <div ref={observerRef} className="h-0" />
-                )}
                 {index % INITIAL_MESSAGES.length === 0 && (
                   <div className="flex justify-center h-32 items-center">
                     <Heart
