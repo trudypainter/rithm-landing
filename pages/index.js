@@ -8,7 +8,8 @@ import Head from "next/head";
 const DEFAULT_ANIMATION_CONFIG = {
   baseGlow: 40,
   maxGlowIncrease: 150,
-  spreadRadius: 70,
+  desktopSpreadRadius: 70,
+  mobileSpreadRadius: 35,
   maxOpacity: 0.7,
   decayRate: 0.98,
   scrollMultiplier: 80,
@@ -46,6 +47,9 @@ export default function RithmLanding() {
   const [showControls, setShowControls] = useState(true);
   const [animationConfig, setAnimationConfig] = useState(
     DEFAULT_ANIMATION_CONFIG
+  );
+  const [spreadRadius, setSpreadRadius] = useState(
+    DEFAULT_ANIMATION_CONFIG.desktopSpreadRadius
   );
   const scrollRef = useRef(null);
   const observerRef = useRef(null);
@@ -127,6 +131,26 @@ export default function RithmLanding() {
     };
   }, [animationConfig.scrollMultiplier, animationConfig.decayRate]);
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 768px)");
+
+    const handleScreenChange = (e) => {
+      setSpreadRadius(
+        e.matches
+          ? DEFAULT_ANIMATION_CONFIG.mobileSpreadRadius
+          : DEFAULT_ANIMATION_CONFIG.desktopSpreadRadius
+      );
+    };
+
+    // Set initial value
+    handleScreenChange(mediaQuery);
+
+    // Add listener for changes
+    mediaQuery.addListener(handleScreenChange);
+
+    return () => mediaQuery.removeListener(handleScreenChange);
+  }, []);
+
   return (
     <>
       <Head>
@@ -141,9 +165,7 @@ export default function RithmLanding() {
             boxShadow: `inset 0 0 ${
               animationConfig.baseGlow +
               scrollIntensity * animationConfig.maxGlowIncrease
-            }px ${
-              scrollIntensity * animationConfig.spreadRadius
-            }px rgba(236, 72, 153, ${
+            }px ${scrollIntensity * spreadRadius}px rgba(236, 72, 153, ${
               scrollIntensity * animationConfig.maxOpacity
             })`,
           }}
@@ -157,16 +179,10 @@ export default function RithmLanding() {
           defaultConfig={DEFAULT_ANIMATION_CONFIG}
         /> */}
 
-        <div className="max-w-md mx-auto">
+        <div className="w-full max-w-md mx-auto h-screen">
           <div
             ref={scrollRef}
-            className="hide-scrollbar"
-            style={{
-              height: "100vh",
-              overflow: "auto",
-              marginRight: "-50px",
-              paddingRight: "50px",
-            }}
+            className="hide-scrollbar h-full overflow-auto px-4"
           >
             {messages.map((message, index) => (
               <div key={index}>
