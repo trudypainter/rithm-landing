@@ -47,6 +47,7 @@ export default function RithmLanding() {
     ...INITIAL_MESSAGES,
     ...INITIAL_MESSAGES,
     ...INITIAL_MESSAGES,
+    ...INITIAL_MESSAGES,
   ]);
   const [scrollIntensity, setScrollIntensity] = useState(0);
   const [showControls, setShowControls] = useState(true);
@@ -68,12 +69,7 @@ export default function RithmLanding() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          setMessages((prev) => [
-            ...prev,
-            ...INITIAL_MESSAGES,
-            ...INITIAL_MESSAGES,
-            ...INITIAL_MESSAGES,
-          ]);
+          setMessages((prev) => [...prev, ...INITIAL_MESSAGES]);
         }
       },
       {
@@ -205,6 +201,9 @@ export default function RithmLanding() {
           >
             {messages.map((message, index) => (
               <div key={index}>
+                {index === INITIAL_MESSAGES.length && (
+                  <div ref={observerRef} className="h-0" />
+                )}
                 {index % INITIAL_MESSAGES.length === 0 && (
                   <div className="flex justify-center h-32 items-center">
                     <Heart
@@ -231,7 +230,6 @@ export default function RithmLanding() {
                 </div>
               </div>
             ))}
-            <div ref={observerRef} className="h-4" />
           </div>
         </div>
       </div>
